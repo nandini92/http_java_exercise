@@ -23,32 +23,38 @@ public class Main {
         setCustomers();
     }
 
-    record NewOrder(
-            String givenName,
-            String surame,
-            String email,
-            String address,
-            String city,
-            String province,
-            String postcode,
-            String country,
-            String order,
-            String size) {
-    }
-
     @GetMapping
     public List<Customer> getCustomers() {
         return customers;
     }
 
+    record NewOrder(
+            String givenName,
+            String surname,
+            String email,
+            String address,
+            String city,
+            String province,
+            String postcode,
+            String country, 
+            String order,
+            String size) {
+    }
+
+    record OrderResponse(
+        String status,
+        String error
+    ){
+    }
+
     @PostMapping
-    public String addOrder(@RequestBody NewOrder order) {
-        boolean[] validOrder = new boolean[4];
+    public OrderResponse addOrder(@RequestBody NewOrder order) {
+        boolean[] validOrder = new boolean[3];
         boolean validateCustomer = true;
         System.out.println(order);
 
         for (Customer customer : customers) {
-            validOrder[0] = validateName(customer, order.givenName, order.surame );
+            validOrder[0] = validateName(customer, order.givenName, order.surname );
             validOrder[1] = validateEmail(customer, order.email );
             validOrder[2] = validateAddress(customer, order.address );
 
@@ -58,15 +64,19 @@ public class Main {
                     continue;
                 }
             }
+
+            System.out.println(Arrays.toString(validOrder));
             
             if(validateCustomer){
                 break;
+            } else {
+                return new OrderResponse("error", "undeliverable");
             }
         }
         
-        String bookingResult = validateStock(order.order, order.size);
+        System.out.println(validateStock(order.order, order.size));
         
-        return bookingResult;
+        return new OrderResponse("success", "Order succesfully booked");
     }
 
     public static boolean validateName(Customer customer, String givenName, String surame) {
